@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+.otp-container {
+  text-align: center;
+}
+
+.otp-input {
+  padding: 10px;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.verify-btn {
+  padding: 10px 20px;
+  background-color: #6200ea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.verify-btn:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: red;
+  font-size: 14px;
+}
+
+.success-text {
+  color: green;
+  font-size: 14px;
+}
+
+.resend-text {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.resend-text span {
+  color: #6200ea;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.resend-text span.disabled {
+  color: gray;
+  cursor: not-allowed;
+}
