@@ -1,9 +1,8 @@
 <template>
-  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
   <div class="min-h-screen flex flex-col bg-gray-100">
     <!-- Navbar -->
     <div class="h-16 bg-purple-900 text-white shadow-md flex items-center px-6 justify-between">
-      <h1 class="text-lg font-semibold">Dashboard ({{ authStore.user?.role || 'Guest' }})</h1>
+      <h1 class="text-lg font-semibold">Admin Dashboard</h1>
       <button
         @click="logout"
         class="px-4 py-2 border-2 border-black text-purple-900 bg-white hover:bg-purple-700 hover:text-white transition-all duration-300"
@@ -31,7 +30,7 @@
         </button>
         <ul class="flex flex-col py-4">
           <li
-            v-for="(item, index) in filteredMenuItems"
+            v-for="(item, index) in menuItems"
             :key="index"
             class="transition-transform duration-300 hover:translate-x-2"
           >
@@ -59,7 +58,7 @@
         <div v-if="activePage === 'Home'">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-center items-center">
             <div
-              v-for="(widget, index) in filteredWidgets"
+              v-for="(widget, index) in widgets"
               :key="index"
               class="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center w-64 h-40 transform transition-transform duration-500 hover:scale-105 border-2 border-purple-900 backdrop-blur-xl bg-opacity-90"
             >
@@ -70,72 +69,43 @@
           </div>
         </div>
 
-        <!-- Employees Section (Admin only) -->
-        <div v-if="activePage === 'Employees' && authStore.user?.role === 'admin'">
+        <!-- Employees Section -->
+        <div v-if="activePage === 'Employees'">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-purple-900">Employees</h3>
             <button
               @click="toggleEmployeeForm"
-              class="px-4 py-2 border-2 border-purple-900 border-double text-black rounded-lg shadow hover:bg-purple-100 transition-all"
+              class="px-4 py-2 bg-gray-800 text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
             >
               Create New
             </button>
           </div>
-          <p v-if="!showEmployeeForm" class="mt-2 text-gray-600">List of employees will be displayed here.</p>
+          <div v-if="!showEmployeeForm">
+            <EmployeeDirectory
+              :employees="employees"
+              :items-per-page="itemsPerPage"
+              @delete-employee="deleteEmployee"
+            />
+          </div>
           <div v-if="showEmployeeForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateEmployeeForm @cancel="toggleEmployeeForm" @submit="submitEmployee" />
+            <CreateEmployeeForm @cancel="toggleEmployeeForm" @employee-added="addEmployee" />
           </div>
         </div>
 
-        <!-- Employee Travels Section (Admin and Employee) -->
-        <div v-if="activePage === 'Employee Travels' && (authStore.user?.role === 'admin' || authStore.user?.role === 'employee')">
+        <!-- Other Sections -->
+        <div v-if="activePage === 'Employee Travels'">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-purple-900">Employee Travels</h3>
             <button
-              v-if="authStore.user?.role === 'employee'"
               @click="toggleTravelForm"
-              class="px-4 py-2 border-2 border-purple-900 border-double text-black rounded-lg shadow hover:bg-purple-100 transition-all"
+              class="px-4 py-2 bg-gray-800 text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
             >
               Create New
             </button>
           </div>
           <p v-if="!showTravelForm" class="mt-2 text-gray-600">List of employee travels will be displayed here.</p>
           <div v-if="showTravelForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateTravelForm @cancel="toggleTravelForm" @submit="submitTravel" />
-          </div>
-        </div>
-
-        <!-- Visits Section (Admin and Receptionist) -->
-        <div v-if="activePage === 'Visits' && (authStore.user?.role === 'admin' || authStore.user?.role === 'receptionist')">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-purple-900">Visits</h3>
-            <button
-              @click="toggleVisitForm"
-              class="px-4 py-2 border-2 border-purple-900 border-double text-black rounded-lg shadow hover:bg-purple-100 transition-all"
-            >
-              Create New
-            </button>
-          </div>
-          <p v-if="!showVisitForm" class="mt-2 text-gray-600">List of visits will be displayed here.</p>
-          <div v-if="showVisitForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateVisitForm @cancel="toggleVisitForm" @submit="submitVisit" />
-          </div>
-        </div>
-
-        <!-- Deliveries Section (Admin and Receptionist) -->
-        <div v-if="activePage === 'Deliveries' && (authStore.user?.role === 'admin' || authStore.user?.role === 'receptionist')">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-purple-900">Deliveries</h3>
-            <button
-              @click="toggleDeliveryForm"
-              class="px-4 py-2 border-2 border-purple-900 border-double text-black rounded-lg shadow hover:bg-purple-100 transition-all"
-            >
-              Create New
-            </button>
-          </div>
-          <p v-if="!showDeliveryForm" class="mt-2 text-gray-600">List of deliveries will be displayed here.</p>
-          <div v-if="showDeliveryForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateDeliveryForm @cancel="toggleDeliveryForm" @submit="submitDelivery" />
+            <CreateTravelForm @cancel="toggleTravelForm" />
           </div>
         </div>
       </div>
@@ -148,131 +118,127 @@
   </div>
 </template>
 
-<script>
-import { useAuthStore } from '~/stores/stores'; // Adjust path if needed
-import CreateEmployeeForm from '~/components/CreateEmployeeForm.vue';
-import CreateTravelForm from '~/components/CreateTravelForm.vue';
-import CreateVisitForm from '~/components/CreateVisitForm.vue';
-import CreateDeliveryForm from '~/components/CreateDeliveryForm.vue';
+<script setup>
+import { useState } from '#app';
 
-export default {
-  components: {
-    CreateEmployeeForm,
-    CreateTravelForm,
-    CreateVisitForm,
-    CreateDeliveryForm,
-  },
-  setup() {
-    const authStore = useAuthStore();
-    return { authStore };
-  },
-  data() {
-    return {
-      sidebarCollapsed: window.innerWidth < 768,
-      activePage: 'Home',
-      showEmployeeForm: false,
-      showTravelForm: false,
-      showVisitForm: false,
-      showDeliveryForm: false,
-      menuItems: [
-        { label: 'Home', icon: 'bx-home', roles: ['admin', 'employee', 'receptionist'] },
-        { label: 'Employees', icon: 'bx-user', roles: ['admin'] },
-        { label: 'Employee Travels', icon: 'bx-car', roles: ['admin', 'employee'] },
-        { label: 'Visits', icon: 'bx-pen', roles: ['admin', 'receptionist'] },
-        { label: 'Deliveries', icon: 'bx-package', roles: ['admin', 'receptionist'] },
-      ],
-      widgets: [
-        { title: 'Employees', text: 'Total: 50', icon: 'bx-user', roles: ['admin'] },
-        { title: 'Travels', text: 'Pending: 12', icon: 'bx-car', roles: ['admin', 'employee'] },
-        { title: 'Appointments', text: 'Upcoming: 8', icon: 'bx-calendar', roles: ['admin', 'receptionist'] },
-        { title: 'Deliveries', text: 'Pending: 5', icon: 'bx-package', roles: ['admin', 'receptionist'] },
-      ],
-    };
-  },
-  computed: {
-    filteredMenuItems() {
-      return this.menuItems.filter(item => item.roles.includes(this.authStore.user?.role));
-    },
-    filteredWidgets() {
-      return this.widgets.filter(widget => widget.roles.includes(this.authStore.user?.role));
-    },
-  },
-  methods: {
-    async fetchUser() {
-      await this.authStore.fetchUser();
-      if (!this.authStore.user) {
-        this.logout();
-      }
-    },
-    async logout() {
-      await this.authStore.logout();
-      this.$router.push('/login');
-    },
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed;
-    },
-    setActivePage(page) {
-      this.activePage = page;
-      this.showEmployeeForm = false;
-      this.showTravelForm = false;
-      this.showVisitForm = false;
-      this.showDeliveryForm = false;
-    },
-    toggleEmployeeForm() {
-      this.showEmployeeForm = !this.showEmployeeForm;
-      if (this.showEmployeeForm) this.sidebarCollapsed = true;
-    },
-    toggleTravelForm() {
-      this.showTravelForm = !this.showTravelForm;
-      if (this.showTravelForm) this.sidebarCollapsed = true;
-    },
-    toggleVisitForm() {
-      this.showVisitForm = !this.showVisitForm;
-      if (this.showVisitForm) this.sidebarCollapsed = true;
-    },
-    toggleDeliveryForm() {
-      this.showDeliveryForm = !this.showDeliveryForm;
-      if (this.showDeliveryForm) this.sidebarCollapsed = true;
-    },
-    async submitEmployee(formData) {
-      await this.submitToApi('/api/employees/', formData);
-      this.toggleEmployeeForm();
-    },
-    async submitTravel(formData) {
-      formData.employee_email = this.authStore.user.email; // Add logged-in user's email
-      await this.submitToApi('/api/apply_for_travel/', formData);
-      this.toggleTravelForm();
-    },
-    async submitVisit(formData) {
-      await this.submitToApi('/api/visits/', formData);
-      this.toggleVisitForm();
-    },
-    async submitDelivery(formData) {
-      await this.submitToApi('/api/deliveries/', formData);
-      this.toggleDeliveryForm();
-    },
-    async submitToApi(endpoint, data) {
-      try {
-        const response = await $fetch(`${BASE_URL}${endpoint}`, {
-          method: 'POST',
-          body: data,
-          credentials: 'include', // Use session cookies
-        });
-        alert('Submitted successfully!');
-        return response;
-      } catch (error) {
-        console.error('Submission failed:', error);
-        alert('Failed to submit: ' + (error.response?.error || 'Unknown error'));
-        throw error;
-      }
-    },
-  },
-  async mounted() {
-    await this.fetchUser();
-    window.addEventListener('resize', this.handleResize);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
-  },
+// External CSS
+useHead({
+  link: [{ rel: 'stylesheet', href: 'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' }],
+});
+
+// Base URL for API (adjust as needed)
+const BASE_URL = 'http://127.0.0.1:8000';
+
+// Reactive state (store-like)
+const employees = useState('employees', () => []);
+const sidebarCollapsed = useState('sidebarCollapsed', () => process.client ? window.innerWidth < 768 : false);
+const activePage = useState('activePage', () => 'Home');
+const showEmployeeForm = useState('showEmployeeForm', () => false);
+const showTravelForm = useState('showTravelForm', () => false);
+const itemsPerPage = useState('itemsPerPage', () => 5);
+
+// Static data
+const menuItems = [
+  { label: 'Home', icon: 'bx-home' },
+  { label: 'Employees', icon: 'bx-user' },
+  { label: 'Employee Travels', icon: 'bx-car' },
+  { label: 'Visits', icon: 'bx-pen' },
+  { label: 'Deliveries', icon: 'bx-package' },
+];
+
+const widgets = [
+  { title: 'Employees', text: 'Total: 50', icon: 'bx-user' },
+  { title: 'Travels', text: 'Pending: 12', icon: 'bx-car' },
+  { title: 'Appointments', text: 'Upcoming: 8', icon: 'bx-calendar' },
+  { title: 'Deliveries', text: 'Pending: 5', icon: 'bx-package' },
+];
+
+// Fetch employees and map fields
+const fetchEmployees = async () => {
+  try {
+    const response = await $fetch(`${BASE_URL}/user_mgt/employees/`);
+    employees.value = response.employees.map(emp => ({
+      id: emp.id,
+      name: `${emp.first_name} ${emp.last_name}`, // Combine first_name and last_name
+      email: emp.email,
+      phone: emp.phone_number || 'N/A', // Use phone_number, fallback to 'N/A' if null
+      role: emp.role || 'Employee', // Assuming role might be added; fallback to 'Employee'
+    }));
+  } catch (error) {
+    console.error('Error fetching employees:', error);
+  }
 };
+
+// CRUD Operations
+const addEmployee = async (employee) => {
+  try {
+    // Split name into first_name and last_name for backend compatibility
+    const [first_name, ...lastNameParts] = employee.name.split(' ');
+    const last_name = lastNameParts.join(' ') || '';
+    const payload = {
+      first_name,
+      last_name,
+      email: employee.email,
+      phone_number: employee.phone,
+      role: employee.role || 'Employee', // Default role if not provided
+    };
+    const newEmployee = await $fetch(`${BASE_URL}/user_mgt/employees/`, {
+      method: 'POST',
+      body: payload,
+    });
+    employees.value.push({
+      id: newEmployee.id,
+      name: `${newEmployee.first_name} ${newEmployee.last_name}`,
+      email: newEmployee.email,
+      phone: newEmployee.phone_number || 'N/A',
+      role: newEmployee.role || 'Employee',
+    });
+    toggleEmployeeForm();
+  } catch (error) {
+    console.error('Error adding employee:', error);
+  }
+};
+
+const deleteEmployee = async (id) => {
+  try {
+    await $fetch(`${BASE_URL}/user_mgt/employees/${id}/`, {
+      method: 'DELETE',
+    });
+    employees.value = employees.value.filter(emp => emp.id !== id);
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+  }
+};
+
+// Methods
+const logout = () => console.log('Logging out...');
+const toggleSidebar = () => (sidebarCollapsed.value = !sidebarCollapsed.value);
+const setActivePage = (page) => {
+  activePage.value = page;
+  showEmployeeForm.value = false;
+  showTravelForm.value = false;
+};
+const toggleEmployeeForm = () => {
+  showEmployeeForm.value = !showEmployeeForm.value;
+  if (showEmployeeForm.value) sidebarCollapsed.value = true;
+};
+const toggleTravelForm = () => {
+  showTravelForm.value = !showTravelForm.value;
+  if (showTravelForm.value) sidebarCollapsed.value = true;
+};
+
+// Fetch employees on mount (client-side)
+onMounted(() => {
+  fetchEmployees();
+  if (process.client) {
+    window.addEventListener('resize', () => (sidebarCollapsed.value = window.innerWidth < 768));
+  }
+});
+
+// Cleanup
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('resize', () => (sidebarCollapsed.value = window.innerWidth < 768));
+  }
+});
 </script>
