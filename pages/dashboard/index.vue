@@ -75,7 +75,7 @@
             <h3 class="text-lg font-semibold text-purple-900">Employees</h3>
             <button
               @click="toggleEmployeeForm"
-              class="px-4 py-2 bg-gray-800 text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
+              class="px-4 py-2 bg-grey text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
             >
               Create New
             </button>
@@ -92,18 +92,20 @@
           </div>
         </div>
 
-        <!-- Other Sections -->
+        <!-- Employee Travels Section -->
         <div v-if="activePage === 'Employee Travels'">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-purple-900">Employee Travels</h3>
             <button
               @click="toggleTravelForm"
-              class="px-4 py-2 bg-gray-800 text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
+              class="px-4 py-2 bg-grey text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
             >
               Create New
             </button>
           </div>
-          <p v-if="!showTravelForm" class="mt-2 text-gray-600">List of employee travels will be displayed here.</p>
+          <div v-if="!showTravelForm">
+            <EmployeeTravelList />
+          </div>
           <div v-if="showTravelForm" class="bg-white p-6 rounded-lg shadow-md">
             <CreateTravelForm @cancel="toggleTravelForm" />
           </div>
@@ -120,6 +122,7 @@
 
 <script setup>
 import { useState } from '#app';
+
 
 // External CSS
 useHead({

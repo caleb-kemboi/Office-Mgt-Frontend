@@ -1,10 +1,10 @@
 <template>
-  <div class="p-6 shadow-lg rounded-lg border-2 border-purple-900 relative">
-    <h3 class="text-lg font-semibold text-black mb-4">Enter Employee Details</h3>
+  <div class="px-8 py-12 shadow-lg rounded-lg relative"> 
+    <h3 class="text-lg top left-2 font-semibold text-grey mb-4">Enter Employee Details</h3>
     <!-- Red X icon for cancel -->
     <button 
       @click="$emit('cancel')"
-      class="absolute top-2 right-2 text-red-600 hover:text-red-800 transition-colors focus:outline-none"
+      class="absolute top-2 right-2 bg-red hover:bg-black transition-colors focus:outline-none"
       aria-label="Cancel"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,7 +19,7 @@
         <input
           type="text"
           v-model="form.first_name"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-green focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter first name"
         >
       </div>
@@ -28,7 +28,7 @@
         <input
           type="text"
           v-model="form.last_name"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter last name"
         >
       </div>
@@ -37,7 +37,7 @@
         <input
           type="email"
           v-model="form.email"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter email"
         >
       </div>
@@ -46,7 +46,7 @@
         <input
           type="password"
           v-model="form.password"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter password"
         >
       </div>
@@ -54,8 +54,9 @@
         <label class="block text-purple-900 text-sm font-medium mb-1">Role</label>
         <select
           v-model="form.role"
-          class="w-full border-b-2 border-yellow-400 focus:border-yellow-600 px-3 py-2 bg-black text-white outline-none transition-colors appearance-none cursor-pointer"
+          class="w-full border-b-2 border-yellow-400 focus:border-yellow-600 px-3 py-2 bg-amber text-black outline-none transition-colors appearance-none cursor-pointer"
         >
+          <option value="--Select Role--">-- Select Employee Role --</option>
           <option value="employee">Employee</option>
           <option value="receptionist">Receptionist</option>
           <option value="supervisor">Supervisor</option>
@@ -66,7 +67,7 @@
         <input
           type="email"
           v-model="form.supervisor"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter supervisor email"
         >
       </div>
@@ -75,7 +76,7 @@
         <input
           type="tel"
           v-model="form.phone_number"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter phone number"
         >
       </div>
@@ -84,7 +85,7 @@
         <input
           type="date"
           v-model="form.date_of_birth"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors"
         >
       </div>
       <div class="flex-1 min-w-[200px]">
@@ -92,7 +93,7 @@
         <input
           type="text"
           v-model="form.zip"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-black text-white outline-none transition-colors placeholder-gray-400"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter zip code"
         >
       </div>
@@ -101,7 +102,7 @@
       <div class="w-full flex justify-end mt-6">
         <button
           type="submit"
-          class="px-4 py-2 bg-black text-white border-2 border-purple-900 rounded-lg shadow-md hover:bg-gray-800 transition-all font-medium focus:outline-none focus:ring-2 focus:ring-purple-900 focus:ring-opacity-50"
+          class="px-4 py-2 bg-green text-white border-2 border-purple-900 rounded-lg shadow-md hover:bg-gray-800 transition-all font-medium focus:outline-none focus:ring-2 focus:ring-purple-900 focus:ring-opacity-50"
         >
           Submit
         </button>
@@ -119,7 +120,7 @@ export default {
         password: "",
         first_name: "",
         last_name: "",
-        role: "employee",
+        role: "--Select Role--",
         supervisor: "",
         phone_number: "",
         date_of_birth: "",

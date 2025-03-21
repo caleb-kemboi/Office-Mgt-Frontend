@@ -4,26 +4,33 @@
     <div class="controls mb-4">
       <div class="filter-sort flex gap-4">
         <div>
-          <label for="role-filter" class="mr-2 text-gray-700">Filter by Role:</label>
+          <label for="role-filter" class="mr-2 text-black">Filter by Role:</label>
           <select
             id="role-filter"
             v-model="selectedRole"
-            class="border rounded px-2 py-1"
+            class=" bg-amber text-white border-black rounded px-2 py-2 "
             @change="filterEmployees"
           >
-            <option value="">All Roles</option>
-            <option v-for="role in uniqueRoles" :key="role" :value="role">{{ role }}</option>
+            <option class=" text-white" value="">All Roles</option>
+            <option class="text-white " v-for="role in uniqueRoles" :key="role" :value="role">{{ role }}</option>
           </select>
         </div>
         <button
           @click="sortEmployees"
-          class="px-3 py-1 bg-purple-900 text-white rounded hover:bg-purple-700"
+          class="px-3 py-1 bg-purple text-white rounded hover:bg-purple-700"
         >
           Sort by Name {{ sortDirection === 'asc' ? '↓' : '↑' }}
         </button>
       </div>
     </div>
     <ul class="employee-list">
+      <li class="employee-item employee-header">
+        <span class="employee-name">Name</span>
+        <span>Email</span>
+        <span>Phone</span>
+        <span class="employee-name">Role</span>
+        <span>Action</span>
+      </li>
       <li
         v-for="employee in paginatedEmployees"
         :key="employee.id"
@@ -32,40 +39,60 @@
         <span class="employee-name">{{ employee.name }}</span>
         <span>{{ employee.email }}</span>
         <span>{{ employee.phone }}</span>
-        <span>{{ employee.role }}</span>
-        <button
-          @click="deleteEmployee(employee.id)"
-          class="delete-btn text-red-600 hover:text-red-800"
-        >
-          Delete
-        </button>
+        <span class="employee-name">{{ employee.role }}</span>
+        <div class="actions">
+          <button
+            @click="editEmployee(employee)"
+            class="edit-btn py-2 px-3 rounded bg-blue text-white hover:bg-blue-700 mr-2"
+          >
+            Edit
+          </button>
+          <button
+            @click="deleteEmployee(employee.id)"
+            class="delete-btn py-2 px-3 rounded bg-red text-white hover:text-red-800"
+          >
+            Delete
+          </button>
+        </div>
       </li>
     </ul>
-    <div v-if="paginatedEmployees.length === 0" class="text-center py-4 text-gray-600">
+    <div v-if="paginatedEmployees.length === 0" class="text-center py-4 text-black">
       No employees found.
     </div>
     <div class="pagination mt-4 flex justify-center items-center gap-2">
       <button
         @click="prevPage"
         :disabled="currentPage === 1"
-        class="px-3 py-1 bg-purple-900 text-white rounded disabled:bg-gray-400 hover:bg-purple-700"
+        class="px-3 py-1 bg-black text-white rounded disabled:bg-gray-400 hover:bg-purple-700"
       >
         Previous
       </button>
-      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <span class="px-3 py-1 bg-green-600 text-white rounded">Page {{ currentPage }} of {{ totalPages }}</span>
       <button
         @click="nextPage"
         :disabled="currentPage === totalPages"
-        class="px-3 py-1 bg-purple-900 text-white rounded disabled:bg-gray-400 hover:bg-purple-700"
+        class="px-3 py-1 bg-black text-white rounded disabled:bg-gray-400 hover:bg-purple-700"
       >
         Next
       </button>
     </div>
+    <!-- Edit component will appear here when selected -->
+    <edit-employee
+      v-if="selectedEmployee"
+      :employee="selectedEmployee"
+      @update-employee="updateEmployee"
+      @close="selectedEmployee = null"
+    />
   </div>
 </template>
 
 <script>
+import EditEmployee from './EditEmployee.vue';
+
 export default {
+  components: {
+    EditEmployee
+  },
   props: {
     employees: {
       type: Array,
@@ -82,6 +109,7 @@ export default {
       selectedRole: '',
       sortDirection: 'asc',
       filteredEmployees: [],
+      selectedEmployee: null, // New state for tracking edit
     };
   },
   computed: {
@@ -113,7 +141,7 @@ export default {
       this.filterEmployees();
     },
     selectedRole() {
-      this.currentPage = 1; // Reset to first page when filter changes
+      this.currentPage = 1;
     },
   },
   methods: {
@@ -121,7 +149,7 @@ export default {
       this.filteredEmployees = this.selectedRole
         ? this.employees.filter(emp => emp.role === this.selectedRole)
         : [...this.employees];
-      this.currentPage = 1; // Reset to first page when filtering
+      this.currentPage = 1;
     },
     sortEmployees() {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -141,9 +169,17 @@ export default {
         this.$emit('delete-employee', id);
       }
     },
+    editEmployee(employee) {
+      this.selectedEmployee = { ...employee }; // Create a copy to edit
+    },
+    updateEmployee(updatedEmployee) {
+      this.$emit('update-employee', updatedEmployee);
+      this.selectedEmployee = null; // Close the edit form
+      this.filterEmployees(); // Refresh the list
+    },
   },
   created() {
-    this.filterEmployees(); // Initialize filteredEmployees
+    this.filterEmployees();
   },
 };
 </script>
@@ -155,7 +191,7 @@ export default {
 }
 
 .employee-heading {
-  background-color: #4B0082; /* Dark purple */
+  background-color: #4B0082;
   color: white;
   padding: 15px;
   margin: 0;
@@ -178,13 +214,19 @@ export default {
   align-items: center;
 }
 
+.employee-header {
+  background-color: #e0e0e0;
+  font-weight: bold;
+  color: #333;
+}
+
 .employee-item:last-child {
   border-bottom: none;
 }
 
 .employee-name {
   font-weight: 600;
-  color: #333;
+  color: black;
 }
 
 .employee-item span {
@@ -192,8 +234,10 @@ export default {
   font-size: 14px;
 }
 
-.delete-btn {
+.actions {
   justify-self: end;
+  display: flex;
+  gap: 8px;
 }
 
 .pagination button:disabled {
