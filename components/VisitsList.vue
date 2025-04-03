@@ -1,6 +1,5 @@
 <template>
   <div class="visits-container">
-
     <div v-if="loading" class="loading">Loading visits...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else>
@@ -14,6 +13,8 @@
             <th>Date</th>
             <th>Time</th>
             <th>Employee</th>
+            <th>Checked Out</th>
+            <th>Actions</th> <!-- Actions column -->
           </tr>
         </thead>
         <tbody>
@@ -24,10 +25,31 @@
             <td>{{ visit.visit_purpose }}</td>
             <td>{{ visit.visit_date }}</td>
             <td>{{ visit.visit_time }}</td>
-            <td>{{ visit.employee_email }}</td>
+            <td>{{ visit.employee_name }}</td>
+            <td>{{ visit.visitor_checked_out }}</td>
+            <td>
+              <button @click="editVisit(visit)" class="action-button edit">Edit</button>
+              <button v-if="visit.visitor_checked_out === 'No'" @click="updateVisit(visit)" class="action-button update">Check Out</button>
+              <button @click="deleteVisit(visit)" class="action-button delete">Delete</button>
+            </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div v-if="pagination" class="pagination">
+        <button 
+          @click="loadVisits(pagination.previous)" 
+          :disabled="!pagination.previous">
+          Previous
+        </button>
+        <span class="text-purple">Page {{ pagination.currentPage }} of {{ pagination.totalPages }}</span>
+        <button 
+          @click="loadVisits(pagination.next)" 
+          :disabled="!pagination.next">
+          Next
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -39,23 +61,48 @@ export default {
       visits: [],
       loading: true,
       error: null,
+      pagination: {
+        next: null,
+        previous: null,
+        currentPage: 1,
+        totalPages: 1,
+      },
     };
   },
   methods: {
-    async fetchVisits() {
+    async fetchVisits(pageUrl = 'http://127.0.0.1:8000/visitors/visit_list/') {
       try {
-        const response = await fetch('http://127.0.0.1:8000/visitors/visit_list/');
+        this.loading = true;
+        const response = await fetch(pageUrl);
         if (!response.ok) {
           throw new Error("Failed to fetch visits");
         }
         const data = await response.json();
         this.visits = data.visits;
+        this.pagination.next = data.pagination.next;
+        this.pagination.previous = data.pagination.previous;
+        this.pagination.currentPage = data.pagination.currentPage;
+        this.pagination.totalPages = data.pagination.totalPages;
       } catch (err) {
         this.error = err.message;
       } finally {
         this.loading = false;
       }
     },
+
+    loadVisits(url) {
+      this.fetchVisits(url);
+    },
+
+    editVisit(visit) {
+      console.log("Edit Visit", visit);
+    },
+    updateVisit(visit) {
+      console.log("Update Visit", visit);
+    },
+    deleteVisit(visit) {
+      console.log("Delete Visit", visit);
+    }
   },
   mounted() {
     this.fetchVisits();
@@ -70,13 +117,6 @@ export default {
   background: white;
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.title {
-  text-align: center;
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
 }
 
 .loading, .error {
@@ -101,12 +141,56 @@ export default {
   color: white;
 }
 
-@media (max-width: 768px) {
-  .visits-table {
-    font-size: 12px;
-  }
-  .visits-table th, .visits-table td {
-    padding: 6px;
-  }
+.action-button {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+}
+
+.update {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.edit {
+  background-color: #FFA500;
+  color: white;
+}
+
+.delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 10px;
+  background-color: #4B0082;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.pagination button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin: 0 10px;
 }
 </style>
