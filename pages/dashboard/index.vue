@@ -5,7 +5,7 @@
       <h1 class="text-lg font-semibold">Admin Dashboard</h1>
       <button
         @click="logout"
-        class="px-4 py-2 border-2 border-black text-purple-900 bg-white hover:bg-purple-700 hover:text-white transition-all duration-300"
+        class="px-4 py-2 border-2 rounded border-black text-purple-900 bg-amber-500 hover:bg-purple-700 hover:text-white transition-all duration-300"
       >
         Logout
       </button>
@@ -80,15 +80,29 @@
               Create New
             </button>
           </div>
-          <div v-if="!showEmployeeForm">
+
+          <!-- Employee Listing -->
+          <div v-if="!showEmployeeForm && !showEditEmployeeForm">
             <EmployeeDirectory
               :employees="employees"
               :items-per-page="itemsPerPage"
               @delete-employee="deleteEmployee"
+              @edit-employee="startEditingEmployee"
             />
           </div>
+
+          <!-- Create Employee Form -->
           <div v-if="showEmployeeForm" class="bg-white p-6 rounded-lg shadow-md">
             <CreateEmployeeForm @cancel="toggleEmployeeForm" @employee-added="addEmployee" />
+          </div>
+
+          <!-- Edit Employee Form -->
+          <div v-if="showEditEmployeeForm" class="bg-white p-6 rounded-lg shadow-md">
+            <EditEmployee
+              :employee="selectedEmployee"
+              @cancel="closeEditForm"
+              @update-employee="handleUpdate"
+            />
           </div>
         </div>
 
@@ -103,13 +117,75 @@
               Create New
             </button>
           </div>
+
+          <!-- Travel Listing -->
           <div v-if="!showTravelForm">
-            <EmployeeTravelList />
+            <EmployeeTravelList
+              :travels="travels"
+              :items-per-page="itemsPerPage"
+              @delete-travel="deleteTravel"
+              @edit-travel="editTravel"
+            />
           </div>
+
+          <!-- Create Travel Form -->
           <div v-if="showTravelForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateTravelForm @cancel="toggleTravelForm" />
+            <CreateTravelForm @cancel="toggleTravelForm" @travel-added="addTravel" />
           </div>
         </div>
+       <!-- Employee Visits Section -->
+          <div v-if="activePage === 'Visits'">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-purple-900">Employee Visits</h3>
+            <button
+              @click="toggleVisitForm"
+              class="px-4 py-2 bg-grey text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
+            >
+              Create New
+            </button>
+          </div>
+
+          <!-- Visits Listing -->
+          <div v-if="!showVisitForm">
+            <VisitsList 
+            :visits="visits"
+            @edit-visit="editVisit"
+            @delete-visit="deleteVisit"
+           />
+          </div>
+
+          <!-- Create Travel Form -->
+          <div v-if="showVisitForm" class="bg-white p-6 rounded-lg shadow-md">
+            <CreateEmployeeVisit @cancel="toggleVisitForm" @travel-added="addTravel" />
+          </div>
+        </div>
+
+        <div v-if="activePage === 'Deliveries'">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold text-purple-900">Deliveries</h3>
+    <button
+      @click="toggleDeliveryForm"
+      class="px-4 py-2 bg-grey text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
+    >
+      Create New
+    </button>
+  </div>
+
+  <!-- Deliveries Listing -->
+  <div v-if="!showDeliveryForm">
+    <DeliveryList
+      :deliveries="deliveries"
+      :pagination="pagination"
+      :loading="loading"
+      :errorMessage="errorMessage"
+    />
+  </div>
+
+  <!-- Create Delivery Form -->
+  <div v-if="showDeliveryForm" class="bg-white p-6 rounded-lg shadow-md">
+    <CreateDeliveryForm @cancel="toggleDeliveryForm" @delivery-added="addDelivery" />
+  </div>
+</div>
       </div>
     </div>
 
@@ -121,23 +197,35 @@
 </template>
 
 <script setup>
-import { useState } from '#app';
-
+import { useState } from '#app';  // Nuxt-specific useState
+import { onMounted, onUnmounted } from 'vue';  // Vue lifecycle hooks
+import EmployeeDirectory from '@/components/EmployeeDirectory.vue';
+import EmployeeTravelList from '@/components/EmployeeTravelList.vue';
+import CreateEmployeeForm from '@/components/CreateEmployeeForm.vue';
+import EditEmployee from '@/components/EditEmployee.vue';
+import CreateTravelForm from '@/components/CreateTravelForm.vue';
+import CreateEmployeeVisit from '~/components/CreateEmployeeVisit.vue';
+import VisitsList from '~/components/VisitsList.vue';
+import DeliveryList from '~/components/DeliveryList';
 
 // External CSS
 useHead({
   link: [{ rel: 'stylesheet', href: 'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' }],
 });
 
-// Base URL for API (adjust as needed)
+// Base URL for API
 const BASE_URL = 'http://127.0.0.1:8000';
 
-// Reactive state (store-like)
+// Reactive state
 const employees = useState('employees', () => []);
+const travels = useState('travels', () => []);
+const isLoading = useState('isLoading', () => ({ employees: true, travels: true }));
 const sidebarCollapsed = useState('sidebarCollapsed', () => process.client ? window.innerWidth < 768 : false);
 const activePage = useState('activePage', () => 'Home');
 const showEmployeeForm = useState('showEmployeeForm', () => false);
 const showTravelForm = useState('showTravelForm', () => false);
+const showEditEmployeeForm = useState('showEditEmployeeForm', () => false);
+const selectedEmployee = useState('selectedEmployee', () => null);
 const itemsPerPage = useState('itemsPerPage', () => 5);
 
 // Static data
@@ -156,26 +244,143 @@ const widgets = [
   { title: 'Deliveries', text: 'Pending: 5', icon: 'bx-package' },
 ];
 
-// Fetch employees and map fields
+const visits = useState('visits', () => []);
+const isLoadingVisits = useState('isLoadingVisits', () => true);
+const showVisitForm = useState('showVisitForm', () => false);
+
+
+
+
+
+// Fetch Visits
+const fetchVisits = async () => {
+  try {
+    const response = await $fetch(`${BASE_URL}/visits/list/`);
+    visits.value = Array.isArray(response.visits) ? response.visits : [];
+  } catch (error) {
+    console.error('Error fetching visits:', error);
+    visits.value = [];
+  } finally {
+    isLoadingVisits.value = false;
+  }
+};
+
+// Add Visit
+const addVisit = async (visit) => {
+  try {
+    const payload = {
+      visitor_first_name: visit.visitor_first_name,
+      visitor_last_name: visit.visitor_last_name,
+      visitor_phone: visit.visitor_phone,
+      visitor_email: visit.visitor_email,
+      visit_purpose: visit.visit_purpose,
+      visit_date: visit.visit_date,
+      visit_time: visit.visit_time,
+      employee_email: visit.employee_email,
+    };
+
+    const newVisit = await $fetch(`${BASE_URL}/visits/create/`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    visits.value.push(newVisit);
+    toggleVisitForm();
+  } catch (error) {
+    console.error('Error adding visit:', error);
+    alert(`Failed to add visit: ${error.message}`);
+  }
+};
+
+// Delete Visit
+const deleteVisit = async (id) => {
+  try {
+    await $fetch(`${BASE_URL}/visits/delete/${id}/`, {
+      method: 'DELETE',
+    });
+    visits.value = visits.value.filter(visit => visit.id !== id);
+    console.log(`Visit ${id} deleted`);
+  } catch (error) {
+    console.error('Error deleting visit:', error);
+    alert(`Failed to delete visit: ${error.message}`);
+  }
+};
+
+// Toggle Visit Form
+const toggleVisitForm = () => {
+  showVisitForm.value = !showVisitForm.value;
+  if (showVisitForm.value) sidebarCollapsed.value = true;
+};
+
+if (process.client) {
+  onMounted(() => {
+    fetchVisits();
+  });
+}
+
+
+// Fetch employees
 const fetchEmployees = async () => {
   try {
     const response = await $fetch(`${BASE_URL}/user_mgt/employees/`);
     employees.value = response.employees.map(emp => ({
       id: emp.id,
-      name: `${emp.first_name} ${emp.last_name}`, // Combine first_name and last_name
+      name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || 'N/A',
       email: emp.email,
-      phone: emp.phone_number || 'N/A', // Use phone_number, fallback to 'N/A' if null
-      role: emp.role || 'Employee', // Assuming role might be added; fallback to 'Employee'
+      phone: emp.phone_number || 'N/A',
+      role: emp.role || 'Employee',
     }));
   } catch (error) {
     console.error('Error fetching employees:', error);
+    employees.value = [];
+  } finally {
+    isLoading.value.employees = false;
   }
 };
 
-// CRUD Operations
+// Fetch travels
+const fetchTravels = async () => {
+  try {
+    const response = await $fetch(`${BASE_URL}/employee_travels/travels/`);
+    travels.value = Array.isArray(response.travels) ? response.travels : [];
+  } catch (error) {
+    console.error('Error fetching travels:', error);
+    travels.value = [];
+  } finally {
+    isLoading.value.travels = false;
+  }
+};
+
+const deliveries = ref([]);
+const loading = ref(false);
+const errorMessage = ref(null);
+const pagination = ref(null);
+
+
+const fetchDeliveries = async (url = `${BASE_URL}/deliveries/deliveries/`) => {
+  loading.value = true;
+  errorMessage.value = null;
+  
+  try {
+    console.log("Fetching deliveries...");
+    const response = await $fetch(url);
+    console.log("API Response:", response);
+    
+    deliveries.value = response.deliveries || [];
+    pagination.value = response.pagination || {};
+  } catch (error) {
+    console.error("Error fetching deliveries:", error);
+    errorMessage.value = "Failed to fetch deliveries.";
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => fetchDeliveries());
+// CRUD Operations for Employees
 const addEmployee = async (employee) => {
   try {
-    // Split name into first_name and last_name for backend compatibility
     const [first_name, ...lastNameParts] = employee.name.split(' ');
     const last_name = lastNameParts.join(' ') || '';
     const payload = {
@@ -183,7 +388,7 @@ const addEmployee = async (employee) => {
       last_name,
       email: employee.email,
       phone_number: employee.phone,
-      role: employee.role || 'Employee', // Default role if not provided
+      role: employee.role || 'Employee',
     };
     const newEmployee = await $fetch(`${BASE_URL}/user_mgt/employees/`, {
       method: 'POST',
@@ -204,13 +409,91 @@ const addEmployee = async (employee) => {
 
 const deleteEmployee = async (id) => {
   try {
-    await $fetch(`${BASE_URL}/user_mgt/employees/${id}/`, {
+    await $fetch(`${BASE_URL}/user_mgt/employee_delete/${id}/`, {
       method: 'DELETE',
     });
     employees.value = employees.value.filter(emp => emp.id !== id);
+    console.log(`Employee ${id} deleted`);
   } catch (error) {
     console.error('Error deleting employee:', error);
+    alert(`Failed to delete employee: ${error.message}`);
   }
+};
+
+const handleUpdate = async (updatedEmployee) => {
+  try {
+    const payload = {
+      first_name: updatedEmployee.first_name,
+      last_name: updatedEmployee.last_name,
+      email: updatedEmployee.email,
+      phone_number: updatedEmployee.phone || '',
+      role: updatedEmployee.role,
+      supervisor: updatedEmployee.supervisor || null,
+    };
+    const response = await $fetch(`${BASE_URL}/user_mgt/employee_update/${updatedEmployee.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const index = employees.value.findIndex(emp => emp.id === updatedEmployee.id);
+    if (index !== -1) {
+      employees.value[index] = {
+        id: response.id,
+        name: `${response.first_name} ${response.last_name}`,
+        email: response.email,
+        phone: response.phone_number || 'N/A',
+        role: response.role || 'Employee',
+      };
+    }
+    closeEditForm();
+  } catch (error) {
+    console.error('Error updating employee:', error);
+    alert(`Failed to update employee: ${error.message}`);
+  }
+};
+
+// CRUD Operations for Travels
+const addTravel = async (travel) => {
+  try {
+    const payload = {
+      travel_title: travel.travel_title,
+      employee_email: travel.employee_email,
+      travel_purpose: travel.travel_purpose,
+      travel_date_from: travel.travel_date_from,
+      travel_date_to: travel.travel_date_to,
+      travel_destination: travel.travel_destination,
+      mode_of_transport: travel.mode_of_transport,
+      travel_budget: travel.travel_budget,
+    };
+    const newTravel = await $fetch(`${BASE_URL}/employee_travels/travel_list/`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    travels.value.push(newTravel);
+    toggleTravelForm();
+  } catch (error) {
+    console.error('Error adding travel:', error);
+    alert(`Failed to add travel: ${error.message}`);
+  }
+};
+
+const deleteTravel = async (id) => {
+  try {
+    await $fetch(`${BASE_URL}/employee_travels/travel_detail/${id}/`, {
+      method: 'DELETE',
+    });
+    travels.value = travels.value.filter(travel => travel.id !== id);
+    console.log(`Travel ${id} deleted`);
+  } catch (error) {
+    console.error('Error deleting travel:', error);
+    alert(`Failed to delete travel: ${error.message}`);
+  }
+};
+
+const editTravel = (id) => {
+  console.log(`Edit travel ${id} - Implement form here`);
 };
 
 // Methods
@@ -220,6 +503,7 @@ const setActivePage = (page) => {
   activePage.value = page;
   showEmployeeForm.value = false;
   showTravelForm.value = false;
+  showEditEmployeeForm.value = false;
 };
 const toggleEmployeeForm = () => {
   showEmployeeForm.value = !showEmployeeForm.value;
@@ -229,14 +513,29 @@ const toggleTravelForm = () => {
   showTravelForm.value = !showTravelForm.value;
   if (showTravelForm.value) sidebarCollapsed.value = true;
 };
+const startEditingEmployee = (employee) => {
+  selectedEmployee.value = { 
+    ...employee, 
+    first_name: employee.name.split(' ')[0], 
+    last_name: employee.name.split(' ').slice(1).join(' ') || '',
+    phone: employee.phone || '',
+    supervisor: employee.supervisor || '',
+  };
+  showEditEmployeeForm.value = true;
+};
+const closeEditForm = () => {
+  showEditEmployeeForm.value = false;
+  selectedEmployee.value = null;
+};
 
-// Fetch employees on mount (client-side)
-onMounted(() => {
-  fetchEmployees();
-  if (process.client) {
+// Fetch data on mount, only client-side
+if (process.client) {
+  onMounted(() => {
+    fetchEmployees();
+    fetchTravels();
     window.addEventListener('resize', () => (sidebarCollapsed.value = window.innerWidth < 768));
-  }
-});
+  });
+}
 
 // Cleanup
 onUnmounted(() => {

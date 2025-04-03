@@ -4,7 +4,7 @@
     <form @submit.prevent="submitForm" class="flex flex-wrap gap-4">
       <!-- Text Fields -->
       <div class="flex-1 min-w-[200px]">
-        <label class="block text-purple-900 text-sm font-medium mb-1">Item Name</label>
+        <label class="block text-black text-sm font-medium mb-1">Item Name</label>
         <input
           type="text"
           v-model="form.item_name"

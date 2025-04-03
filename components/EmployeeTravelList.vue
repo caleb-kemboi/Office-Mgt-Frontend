@@ -1,110 +1,190 @@
 <template>
-  <div class="travel-list">
-    <ul class="travel-list-items">
-      <li class="travel-header">
-        <span class="travel-info">Travel Title</span>
-        <span>Purpose</span>
-        <span>Employee Email</span>
-        <span>Destination</span>
-        <span>Travel Dates</span>
-      </li>
-      <li
-        v-for="travel in travels"
-        :key="travel.id"
-        class="travel-item"
-      >
-        <span class="travel-info">{{ travel.travel_title }}</span>
-        <span>{{ travel.travel_purpose }}</span>
-        <span>{{ travel.employee_email }}</span>
-        <span>{{ travel.travel_destination }}</span>
-        <span>{{ travel.travel_date_from }} - {{ travel.travel_date_to }}</span>
-      </li>
-    </ul>
-    <div v-if="loading" class="text-center py-4 text-gray-600">
-      Loading travels...
-    </div>
-    <div v-else-if="travels.length === 0" class="text-center py-4 text-gray-600">
-      No travel records found.
+  <div class="employee-travels">
+    <h2 class="employee-heading">Employee Travels</h2>
+    <table v-if="paginatedTravels.length > 0" class="travel-table bg-white">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Employee</th>
+          <th>Purpose</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Destination</th>
+          <th>Transport</th>
+          <th>Budget</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="travel in paginatedTravels" :key="travel.id">
+         <td> <b>{{ travel.travel_title }}</b></td>
+         <td class="p-2">{{ travel.employee__first_name }} {{ travel.employee__last_name }}</td>
+          <td>{{ travel.travel_purpose }}</td>
+          <td>{{ travel.travel_date_from }}</td>
+          <td>{{ travel.travel_date_to }}</td>
+          <td>{{ travel.travel_destination }}</td>
+          <td>{{ travel.mode_of_transport }}</td>
+          <td>{{ travel.travel_budget }}</td>
+          <td>{{ travel.travel_approval_status }}</td>
+          <td class="p-2 flex gap-2">
+          <button
+            v-if="travel.travel_approval_status === 'Pending'"
+            @click="$emit('approve-travel', travel.id)"
+            class="px-2 py-1 bg-green text-white rounded hover:bg-green-600"
+          >
+            Approve Travel
+          </button>
+
+          <button class="action-btn" @click="editTravel(travel.id)">Edit</button>
+          <br>
+          <br>
+          <button class="action-btn delete-btn" @click="deleteTravel(travel.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p v-else>No travel records available.</p>
+    <div class="pagination" v-if="totalPages > 1">
+      <button class="pagination-btn" @click="prevPage" :disabled="currentPage === 1">Previous</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="pagination-btn" @click="nextPage" :disabled="currentPage === totalPages">Next</button>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  props: {
+    travels: {
+      type: Array,
+      default: () => [],  // Ensures travels is always an array
+    },
+    itemsPerPage: {
+      type: Number,
+      default: 5,
+    },
+  },
   data() {
     return {
-      travels: [],
-      loading: false,
-      BASE_URL: 'http://127.0.0.1:8000' // Adjust as needed
+      currentPage: 1,
     };
   },
-  methods: {
-    async fetchTravels() {
-      this.loading = true;
-      try {
-        const response = await fetch(`${this.BASE_URL}/employee_travels/travels/`);
-        const data = await response.json();
-        this.travels = data.travels.map(travel => ({
-          id: travel.id,
-          travel_title: travel.travel_title,
-          travel_purpose: travel.travel_purpose,
-          employee_email: travel.employee_email,
-          travel_date_from: travel.travel_date_from,
-          travel_date_to: travel.travel_date_to,
-          travel_destination: travel.travel_destination
-        }));
-      } catch (error) {
-        console.error('Error fetching travels:', error);
-      } finally {
-        this.loading = false;
-      }
-    }
+  computed: {
+    totalPages() {
+      return Math.ceil(this.travels.length / this.itemsPerPage) || 1;  // Minimum 1 page
+    },
+    paginatedTravels() {
+      const travels = Array.isArray(this.travels) ? this.travels : [];  // Fallback to empty array
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return travels.slice(start, end);
+    },
   },
-  created() {
-    this.fetchTravels();
-  }
+  methods: {
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) this.currentPage++;
+    },
+    editTravel(id) {
+      this.$emit('edit-travel', id);
+    },
+    deleteTravel(id) {
+      this.$emit('delete-travel', id);
+    },
+  },
 };
 </script>
 
 <style scoped>
-.travel-list {
-  max-width: 100%;
+.employee-travels {
+  margin: 20px;
   font-family: Arial, sans-serif;
 }
 
-.travel-list-items {
-  list-style: none;
-  padding: 0;
-  background-color: #f5f5f5;
-  border-radius: 5px;
-}
-
-.travel-item, .travel-header {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+.employee-heading {
+  background-color: #4B0082;  /* Purple header */
+  color: white;
   padding: 15px;
-  border-bottom: 1px solid #ddd;
-  align-items: center;
+  margin: 0;
+  border-radius: 5px 5px 0 0;
 }
 
-.travel-header {
-  background-color: #e0e0e0;
+.travel-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  color: #333;
   font-weight: bold;
+}
+
+.action-btn {
+  padding: 5px 10px;
+  margin-right: 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.action-btn:hover {
+  background-color: #0056b3;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+}
+
+.delete-btn:hover {
+  background-color: #b02a37;
+}
+
+.pagination {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.pagination-btn {
+  padding: 5px 10px;
+  margin: 0 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.pagination-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+span {
+  margin: 0 10px;
   color: #333;
 }
 
-.travel-item:last-child {
-  border-bottom: none;
-}
-
-.travel-info {
-  font-weight: 600;
-  color: black;
-}
-
-.travel-item span {
+p {
   color: #666;
-  font-size: 14px;
+  text-align: center;
+  padding: 10px;
 }
 </style>

@@ -1,18 +1,18 @@
 <template>
-  <div class="employee-listing">
+  <div class="employee-listing bg-white">
     <h2 class="employee-heading">Employee Directory</h2>
-    <div class="controls mb-4">
+    <div class="controls mb-4 bg-white">
       <div class="filter-sort flex gap-4">
         <div>
           <label for="role-filter" class="mr-2 text-black">Filter by Role:</label>
           <select
             id="role-filter"
             v-model="selectedRole"
-            class=" bg-amber text-white border-black rounded px-2 py-2 "
+            class="bg-amber text-white border-black rounded px-2 py-2"
             @change="filterEmployees"
           >
-            <option class=" text-white" value="">All Roles</option>
-            <option class="text-white " v-for="role in uniqueRoles" :key="role" :value="role">{{ role }}</option>
+            <option class="text-white" value="">All Roles</option>
+            <option class="text-white" v-for="role in uniqueRoles" :key="role" :value="role">{{ role }}</option>
           </select>
         </div>
         <button
@@ -23,7 +23,7 @@
         </button>
       </div>
     </div>
-    <ul class="employee-list">
+    <ul class="employee-list bg-w">
       <li class="employee-item employee-header">
         <span class="employee-name">Name</span>
         <span>Email</span>
@@ -76,23 +76,11 @@
         Next
       </button>
     </div>
-    <!-- Edit component will appear here when selected -->
-    <edit-employee
-      v-if="selectedEmployee"
-      :employee="selectedEmployee"
-      @update-employee="updateEmployee"
-      @close="selectedEmployee = null"
-    />
   </div>
 </template>
 
 <script>
-import EditEmployee from './EditEmployee.vue';
-
 export default {
-  components: {
-    EditEmployee
-  },
   props: {
     employees: {
       type: Array,
@@ -109,7 +97,6 @@ export default {
       selectedRole: '',
       sortDirection: 'asc',
       filteredEmployees: [],
-      selectedEmployee: null, // New state for tracking edit
     };
   },
   computed: {
@@ -170,12 +157,7 @@ export default {
       }
     },
     editEmployee(employee) {
-      this.selectedEmployee = { ...employee }; // Create a copy to edit
-    },
-    updateEmployee(updatedEmployee) {
-      this.$emit('update-employee', updatedEmployee);
-      this.selectedEmployee = null; // Close the edit form
-      this.filterEmployees(); // Refresh the list
+      this.$emit('edit-employee', employee); // Emit to parent instead of managing edit locally
     },
   },
   created() {

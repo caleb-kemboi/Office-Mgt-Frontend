@@ -13,7 +13,7 @@
     </button>
     
     <form @submit.prevent="submitForm" class="flex flex-wrap gap-4">
-      <!-- Text Fields -->
+      <!-- First Name -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-purple-900 text-sm font-medium mb-1">First Name</label>
         <input
@@ -21,8 +21,10 @@
           v-model="form.first_name"
           class="w-full border-b-2 border-green focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter first name"
-        >
+        />
       </div>
+
+      <!-- Last Name -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-purple-900 text-sm font-medium mb-1">Last Name</label>
         <input
@@ -30,8 +32,10 @@
           v-model="form.last_name"
           class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter last name"
-        >
+        />
       </div>
+
+      <!-- Email -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-purple-900 text-sm font-medium mb-1">Email</label>
         <input
@@ -39,8 +43,10 @@
           v-model="form.email"
           class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter email"
-        >
+        />
       </div>
+
+      <!-- Password -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-purple-900 text-sm font-medium mb-1">Password</label>
         <input
@@ -48,57 +54,42 @@
           v-model="form.password"
           class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
           placeholder="Enter password"
-        >
+        />
       </div>
+
+      <!-- Role -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-purple-900 text-sm font-medium mb-1">Role</label>
         <select
           v-model="form.role"
           class="w-full border-b-2 border-yellow-400 focus:border-yellow-600 px-3 py-2 bg-amber text-black outline-none transition-colors appearance-none cursor-pointer"
         >
-          <option value="--Select Role--">-- Select Employee Role --</option>
+          <option value="">-- Select Employee Role --</option>
           <option value="employee">Employee</option>
           <option value="receptionist">Receptionist</option>
-          <option value="supervisor">Supervisor</option>
+          <option value="admin">Admin</option>
         </select>
       </div>
+
+      <!-- Supervisor Dropdown -->
       <div class="flex-1 min-w-[200px]">
-        <label class="block text-purple-900 text-sm font-medium mb-1">Supervisor Email</label>
-        <input
-          type="email"
+        <label class="block text-purple-900 text-sm font-medium mb-1">Supervisor</label>
+        <select
           v-model="form.supervisor"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-          placeholder="Enter supervisor email"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors appearance-none cursor-pointer"
         >
-      </div>
-      <div class="flex-1 min-w-[200px]">
-        <label class="block text-purple-900 text-sm font-medium mb-1">Phone Number</label>
-        <input
-          type="tel"
-          v-model="form.phone_number"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-          placeholder="Enter phone number"
-        >
-      </div>
-      <div class="flex-1 min-w-[200px]">
-        <label class="block text-purple-900 text-sm font-medium mb-1">Date of Birth</label>
-        <input
-          type="date"
-          v-model="form.date_of_birth"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors"
-        >
-      </div>
-      <div class="flex-1 min-w-[200px]">
-        <label class="block text-purple-900 text-sm font-medium mb-1">Zip Code</label>
-        <input
-          type="text"
-          v-model="form.zip"
-          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-          placeholder="Enter zip code"
-        >
+          <option value="">-- Select Supervisor --</option>
+          <option 
+            v-for="employee in employees" 
+            :key="employee.id" 
+            :value="employee.id"
+          >
+            {{ employee.first_name }} {{ employee.last_name }} ({{ employee.role }})
+          </option>
+        </select>
       </div>
 
-      <!-- Buttons -->
+      <!-- Submit Button -->
       <div class="w-full flex justify-end mt-6">
         <button
           type="submit"
@@ -120,20 +111,63 @@ export default {
         password: "",
         first_name: "",
         last_name: "",
-        role: "--Select Role--",
-        supervisor: "",
-        phone_number: "",
-        date_of_birth: "",
-        zip: ""
-      }
+        role: "",
+        supervisor: ""
+      },
+      employees: []
     };
   },
+  mounted() {
+    this.fetchEmployees();
+  },
   methods: {
-    submitForm() {
-      console.log("Employee Created:", this.form);
-      alert("Employee Created Successfully!");
-      this.$emit("cancel");
+    // Fetch all employees (Admins, Receptionists, Supervisors) for the Supervisor dropdown
+    async fetchEmployees() {
+      try {
+        const response = await $fetch('http://127.0.0.1:8000/user_mgt/employees/');
+        this.employees = response.employees;
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    },
+    // Submit form to create a new employee
+    async submitForm() {
+  try {
+    // Ensure all required fields are filled
+    if (!this.form.email || !this.form.password || !this.form.first_name || !this.form.last_name || !this.form.role) {
+      alert("Please fill in all required fields.");
+      return;
     }
+
+    // Prepare request payload
+    const payload = {
+      username: this.form.email,  // Django usually expects "username" for authentication
+      password: this.form.password,
+      first_name: this.form.first_name,
+      last_name: this.form.last_name,
+      role: this.form.role,
+      supervisor_id: this.form.supervisor || null  // Null if no supervisor selected
+    };
+
+    console.log("Submitting payload:", payload);
+
+    // API request
+    const response = await $fetch('http://127.0.0.1:8000/user_mgt/create_user/', {
+      method: 'POST',
+      body: payload,
+      headers: {
+        "Content-Type": "application/json"  // Ensure JSON format
+      }
+    });
+
+    console.log('Server response:', response);
+    alert('Employee created successfully!');
+  } catch (error) {
+    console.error('Error creating employee:', error);
+    alert('Error creating employee. Please check your input.');
+  }
+}
+
   }
 };
 </script>

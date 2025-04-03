@@ -1,117 +1,88 @@
 <template>
-  <div class="edit-employee-modal">
-    <div class="px-8 py-12 shadow-lg rounded-lg relative bg-white"> 
-      <h3 class="text-lg font-semibold text-grey mb-4">Edit Employee Details</h3>
-      <!-- Red X icon for cancel -->
-      <button 
-        @click="$emit('close')"
-        class="absolute top-2 right-2 bg-red hover:bg-black transition-colors focus:outline-none text-white"
-        aria-label="Cancel"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-      
-      <form @submit.prevent="saveChanges" class="flex flex-wrap gap-4">
-        <!-- Text Fields -->
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">First Name</label>
-          <input
+  <div class="modal">
+    <div class="modal-content">
+      <h2>Edit Employee</h2>
+      <form @submit.prevent="submitForm">
+        <!-- First Name -->
+        <div class="form-group">
+          <label>First Name:</label>
+          <input 
             type="text"
-            v-model="form.first_name"
+            v-model="employeeData.first_name"
+            class="input-field"
             required
-            class="w-full border-b-2 border-green focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter first name"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Last Name</label>
-          <input
-            type="text"
-            v-model="form.last_name"
-            required
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter last name"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            v-model="form.email"
-            required
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter email"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            v-model="form.password"
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter new password (optional)"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Role</label>
-          <select
-            v-model="form.role"
-            required
-            class="w-full border-b-2 border-yellow-400 focus:border-yellow-600 px-3 py-2 bg-amber text-black outline-none transition-colors appearance-none cursor-pointer"
-          >
-            <option value="--Select Role--">-- Select Employee Role --</option>
-            <option value="employee">Employee</option>
-            <option value="receptionist">Receptionist</option>
-            <option value="supervisor">Supervisor</option>
-          </select>
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Supervisor Email</label>
-          <input
-            type="email"
-            v-model="form.supervisor"
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter supervisor email"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Phone Number</label>
-          <input
-            type="tel"
-            v-model="form.phone_number"
-            required
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter phone number"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Date of Birth</label>
-          <input
-            type="date"
-            v-model="form.date_of_birth"
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors"
-          >
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-purple-900 text-sm font-medium mb-1">Zip Code</label>
-          <input
-            type="text"
-            v-model="form.zip"
-            class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-amber text-black outline-none transition-colors placeholder-black"
-            placeholder="Enter zip code"
-          >
+          />
         </div>
 
-        <!-- Buttons -->
-        <div class="w-full flex justify-end mt-6">
-          <button
-            type="submit"
-            class="px-4 py-2 bg-green text-white border-2 border-purple-900 rounded-lg shadow-md hover:bg-gray-800 transition-all font-medium focus:outline-none focus:ring-2 focus:ring-purple-900 focus:ring-opacity-50"
+        <!-- Last Name -->
+        <div class="form-group">
+          <label>Last Name:</label>
+          <input 
+            type="text"
+            v-model="employeeData.last_name"
+            class="input-field"
+            required
+          />
+        </div>
+
+        <!-- Email (Readonly) -->
+        <div class="form-group">
+          <label>Email:</label>
+          <input 
+            type="email"
+            v-model="employeeData.email"
+            class="input-field"
+            readonly
+          />
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label>Role:</label>
+          <select 
+            v-model="employeeData.role"
+            class="input-field"
+            required
           >
-            Save Changes
-          </button>
+            <option value="" disabled>Select Role</option>
+            <option value="Admin">Admin</option>
+            <option value="Employee">Employee</option>
+            <option value="Receptionist">Receptionist</option>
+          </select>
+        </div>
+
+        <!-- Supervisor Dropdown -->
+        <div class="form-group">
+          <label>Supervisor:</label>
+          <select 
+            v-model="employeeData.supervisor"
+            class="input-field"
+          >
+            <option value="">No Supervisor</option>
+            <option 
+              v-for="supervisor in supervisors" 
+              :key="supervisor.id" 
+              :value="supervisor.id"
+            >
+              {{ supervisor.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="form-group">
+          <label>Phone:</label>
+          <input 
+            type="text"
+            v-model="employeeData.phone"
+            class="input-field"
+          />
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-buttons">
+          <button type="submit" class="btn-save">Save</button>
+          <button type="button" @click="closeModal" class="btn-cancel">Cancel</button>
         </div>
       </form>
     </div>
@@ -125,54 +96,97 @@ export default {
       type: Object,
       required: true,
     },
+    employees: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
-      form: {
-        id: this.employee.id || '',
-        email: this.employee.email || '',
-        password: '', // Leave empty for edit (optional update)
-        first_name: this.employee.name ? this.employee.name.split(' ')[0] : '',
-        last_name: this.employee.name ? this.employee.name.split(' ')[1] || '' : '',
-        role: this.employee.role || '--Select Role--',
-        supervisor: this.employee.supervisor || '',
-        phone_number: this.employee.phone || '',
-        date_of_birth: this.employee.date_of_birth || '',
-        zip: this.employee.zip || ''
-      }
+      employeeData: { 
+        ...this.employee,
+        // Ensure first_name and last_name are correctly initialized
+        first_name: this.employee.first_name || this.employee.name.split(' ')[0],
+        last_name: this.employee.last_name || this.employee.name.split(' ').slice(1).join(' '),
+        phone: this.employee.phone || '', // Ensure phone is defined
+        supervisor: this.employee.supervisor || '', // Default to empty string if undefined
+      },
     };
   },
+  computed: {
+    supervisors() {
+      return this.employees.filter(emp => emp.id !== this.employee.id);
+    },
+  },
   methods: {
-    saveChanges() {
-      // Combine first and last name back into name for compatibility with original data structure
-      const updatedEmployee = {
-        ...this.form,
-        name: `${this.form.first_name} ${this.form.last_name}`.trim(),
-        phone: this.form.phone_number
-      };
-      // Only include password if it was changed
-      if (!this.form.password) {
-        delete updatedEmployee.password;
-      }
-      this.$emit('update-employee', updatedEmployee);
-    }
-  }
+    submitForm() {
+      // Emit the updated employee data, including the id
+      this.$emit('update-employee', {
+        id: this.employee.id,
+        first_name: this.employeeData.first_name,
+        last_name: this.employeeData.last_name,
+        email: this.employeeData.email,
+        role: this.employeeData.role,
+        phone: this.employeeData.phone,
+        supervisor: this.employeeData.supervisor || null,
+      });
+    },
+    closeModal() {
+      this.$emit('close');
+    },
+  },
 };
 </script>
 
 <style scoped>
-.edit-employee-modal {
+.modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* All other styling is handled by Tailwind classes in the template */
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-save {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+}
+
+.btn-cancel {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+}
 </style>
