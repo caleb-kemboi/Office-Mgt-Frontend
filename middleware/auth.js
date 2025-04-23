@@ -1,34 +1,29 @@
-export default defineNuxtRouteMiddleware(async (to, from) => {
-  const authStore = useAuthStore(); // Pinia auth store
+export default defineNuxtRouteMiddleware((to, from) => {
+  const authStore = useAuthStore()
 
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const otpSent = localStorage.getItem('otpSent') === 'true';
+  // Allow access to OTP page if OTP was sent
+  const otpSent = localStorage.getItem('otpSent') === 'true'
+  if (to.path === '/auth/verify-otp' && otpSent) return
 
-  // 🔹 Allow access to `/login` and `/verify-otp` if OTP was sent
-  if (to.path === '/auth/verify-otp' && otpSent) {
-    return;
-  }
-
-  // 🔹 Ensure user is authenticated
+  // Redirect to login if not authenticated
   if (!authStore.token) {
-    console.warn("🚨 Unauthorized! Redirecting to /login...");
-    return navigateTo('/index');
+    return navigateTo('/')
   }
 
-  // 🔹 Role-based access control (RBAC)
-  const user = authStore.user;
-  const role = user?.role;
+  const role = authStore.user?.role
+  const route = to.path
 
   const protectedRoutes = {
-    admin: ['/admin', '/manage-users'],
-    receptionist: ['/reception', '/deliveries'],
-    employee: ['/dashboard', '/my-travels'],
-  };
-
-  // 🔹 Check if the route is allowed
-  const allowedRoutes = protectedRoutes[role] || [];
-  if (!allowedRoutes.some((route) => to.path.startsWith(route))) {
-    console.warn("🚨 Access Denied! Redirecting to /unauthorized...");
-    return navigateTo('/unauthorized');
+    admin: ['/admin'],
+    employee: ['/employee'],
+    receptionist: ['/receptionist', '/deliveries']
   }
-});
+
+  const allowedRoutes = protectedRoutes[role] || []
+  const hasAccess = allowedRoutes.some(prefix => route.startsWith(prefix))
+
+  if (!hasAccess) {
+    console.warn('Access Denied for role:', role, 'trying to access', route)
+    return navigateTo('/unauthorized')
+  }
+})

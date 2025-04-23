@@ -29,17 +29,19 @@
           <td>{{ travel.travel_approval_status }}</td>
           <td class="p-2 flex gap-2">
           <button
-            v-if="travel.travel_approval_status === 'Pending'"
+            v-if="travel.travel_approval_status === 'Pending Supervisor Approval'"
             @click="$emit('approve-travel', travel.id)"
             class="px-2 py-1 bg-green text-white rounded hover:bg-green-600"
           >
             Approve Travel
           </button>
 
-          <button class="action-btn" @click="editTravel(travel.id)">Edit</button>
-          <br>
-          <br>
-          <button class="action-btn delete-btn" @click="deleteTravel(travel.id)">Delete</button>
+          <button class="px-2 py-1 bg-blue text-white rounded mr-2 hover:bg-navy" @click="$emit('edit-travel', travel)">Edit</button>
+            <br>
+            <br>
+          <button class="px-2 py-1 bg-red text-white rounded hover:bg-red" @click="$emit('delete-travel', travel.id)">Delete</button>
+         
+        
           </td>
         </tr>
       </tbody>

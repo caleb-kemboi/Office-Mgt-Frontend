@@ -1,49 +1,107 @@
 <template>
-  <div class="visit-form">
-    <h2 class="form-heading">Create Employee Visit</h2>
+  <div class="p-6 shadow-lg rounded-lg border-2 border-purple-900 bg-white max-w-4xl mx-auto">
+    <h2 class="text-lg font-semibold text-white bg-purple-900 p-4 text-center rounded-md mb-4">Create Employee Visit</h2>
     
-    <form @submit.prevent="submitVisit" class="grid-form">
-      <div class="form-group">
-        <label>Visitor First Name:</label>
-        <input v-model="visit.visitor_first_name" type="text" required placeholder="Enter visitor's first name">
+    <form @submit.prevent="submitVisit" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visitor First Name</label>
+        <input
+          v-model="visit.visitor_first_name"
+          type="text"
+          required
+          placeholder="Enter visitor's first name"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors placeholder-gray-400"
+        >
       </div>
 
-      <div class="form-group">
-        <label>Visitor Last Name:</label>
-        <input v-model="visit.visitor_last_name" type="text" required placeholder="Enter visitor's last name">
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visitor Last Name</label>
+        <input
+          v-model="visit.visitor_last_name"
+          type="text"
+          required
+          placeholder="Enter visitor's last name"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors placeholder-gray-400"
+        >
       </div>
 
-      <div class="form-group">
-        <label>Visitor Phone:</label>
-        <input v-model="visit.visitor_phone" type="tel" required placeholder="Enter visitor's phone number">
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visitor Phone</label>
+        <input
+          v-model="visit.visitor_phone"
+          type="tel"
+          placeholder="Enter visitor's phone number"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors placeholder-gray-400"
+        >
       </div>
 
-      <div class="form-group">
-        <label>Visitor Email:</label>
-        <input v-model="visit.visitor_email" type="email" required placeholder="Enter visitor's email">
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visitor Email</label>
+        <input
+          v-model="visit.visitor_email"
+          type="email"
+          placeholder="Enter visitor's email"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors placeholder-gray-400"
+        >
       </div>
 
-      <div class="form-group">
-        <label>Visit Purpose:</label>
-        <textarea v-model="visit.visit_purpose" required placeholder="Enter purpose of visit"></textarea>
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visit Purpose</label>
+        <textarea
+          v-model="visit.visit_purpose"
+          required
+          placeholder="Enter purpose of visit"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors placeholder-gray-400 min-h-[80px] resize-y"
+        ></textarea>
       </div>
 
-      <div class="form-group">
-        <label>Visit Date:</label>
-        <input v-model="visit.visit_date" type="date" required>
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visit Date</label>
+        <input
+          v-model="visit.visit_date"
+          type="date"
+          required
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors"
+        >
       </div>
 
-      <div class="form-group">
-        <label>Visit Time:</label>
-        <input v-model="visit.visit_time" type="time" required>
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Visit Time</label>
+        <input
+          v-model="visit.visit_time"
+          type="time"
+          required
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors"
+        >
       </div>
 
-      <div class="form-group">
-        <label>Employee Email:</label>
-        <input v-model="visit.employee_email" type="email" required placeholder="Enter employee's email">
+      <div class="flex flex-col">
+        <label class="text-purple-900 text-sm font-medium mb-1">Employee Email</label>
+        <input
+          v-model="visit.employee_email"
+          type="email"
+          required
+          placeholder="Enter employee's email"
+          class="w-full border-b-2 border-purple-900 focus:border-purple-700 px-3 py-2 bg-transparent text-black outline-none transition-colors placeholder-gray-400"
+        >
       </div>
 
-      <button type="submit" class="submit-btn">Create Visit</button>
+      <div class="col-span-1 md:col-span-2 flex justify-end space-x-4 mt-6">
+        <button
+          type="button"
+          @click="$emit('cancel')"
+          class="px-4 py-2 bg-red border-2 border-purple-900 text-white rounded-lg shadow-md hover:bg-red-700 transition-all font-medium focus:outline-none focus:ring-2 focus:ring-purple-900 focus:ring-opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          :disabled="isSubmitting"
+          class="px-4 py-2 bg-green border-2 border-purple-900 text-white rounded-lg shadow-md hover:bg-green-700 transition-all font-medium focus:outline-none focus:ring-2 focus:ring-purple-900 focus:ring-opacity-50"
+        >
+          {{ isSubmitting ? 'Submitting...' : 'Create Visit' }}
+        </button>
+      </div>
     </form>
   </div>
 </template>
@@ -62,12 +120,22 @@ export default {
         visit_time: '',
         employee_email: '',
       },
+      isSubmitting: false
     };
   },
   methods: {
     submitVisit() {
-      this.$emit('create-visit', { ...this.visit });
-      this.resetForm();
+      if (!this.visit.visitor_first_name || !this.visit.visitor_last_name || !this.visit.visit_purpose || !this.visit.visit_date || !this.visit.visit_time || !this.visit.employee_email) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      this.isSubmitting = true;
+      try {
+        this.$emit('visit-added', { ...this.visit });
+        this.resetForm();
+      } finally {
+        this.isSubmitting = false;
+      }
     },
     resetForm() {
       this.visit = {
@@ -80,86 +148,7 @@ export default {
         visit_time: '',
         employee_email: '',
       };
-    },
-  },
+    }
+  }
 };
 </script>
-
-<style scoped>
-.visit-form {
-  margin: 20px;
-  padding: 20px;
-  background: white;
-  border-radius: 5px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.form-heading {
-  background-color: #4B0082; /* Purple header */
-  color: white;
-  padding: 15px;
-  text-align: center;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-
-.grid-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 15px;
-}
-
-label {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.submit-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .grid-form {
-    grid-template-columns: 1fr; /* Stacks fields vertically on smaller screens */
-  }
-
-  .visit-form {
-    margin: 10px; /* Adjust the form margins on smaller screens */
-    padding: 15px;
-  }
-}
-</style>

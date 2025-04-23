@@ -2,6 +2,7 @@ import { useAuthStore, BASE_URL } from '@/stores/auth';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const authStore = useAuthStore();
+  const csrfToken = useCookie('csrftoken').value
 
   const refreshToken = async () => {
     try {

@@ -42,57 +42,49 @@
 </template>
 
 
-<script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '~/stores/auth';
-import { useRouter } from 'vue-router';
+<script setup lang="ts">
+import { ref, onUnmounted } from 'vue'
+import { useAuthStore } from '~/stores/auth'
+import { useRouter } from 'vue-router'
 
-const authStore = useAuthStore();
-const router = useRouter();
-const otp = ref('');
-const loading = ref(false);
-const errorMessage = ref('');
-const successMessage = ref('');
-const resendLoading = ref(false); // ✅ Define resendLoading
+const authStore = useAuthStore()
+const router = useRouter()
+
+const otp = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
+
+const resendLoading = ref(false)
+const resendDisabled = ref(false)
+const resendCountdown = ref(30)
+let resendInterval: ReturnType<typeof setInterval> | null = null
 
 async function handleVerifyOTP() {
   if (!otp.value.trim()) {
-    errorMessage.value = "Please enter the OTP.";
-    return;
+    errorMessage.value = 'Please enter the OTP.'
+    return
   }
-
-  loading.value = true;
-  errorMessage.value = '';
-
+  loading.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
   try {
-    // 🔹 Ensure we have the email (from store or localStorage)
-    const email = authStore.user?.email || localStorage.getItem("userEmail");
-
-    if (!email) {
-      console.error("❌ Email is missing for OTP verification.");
-      errorMessage.value = "Email is required for verification.";
-      loading.value = false;
-      return;
-    }
-
-    console.log("🔹 Sending OTP verification request:", { email, otp: otp.value });
-
-    const success = await authStore.verifyOTP({ 
-      email: email.toLowerCase(), 
-      otp: otp.value 
-    });
-
-    if (success) {
-      console.log("✅ OTP Verified. Redirecting...");
-      router.push('/dashboard');
+    const email = authStore.user?.email || localStorage.getItem('userEmail')
+    if (!email) throw new Error('Email is required for verification.')
+    const result = await authStore.verifyOTP({ email: email.toLowerCase(), otp: otp.value })
+    if (result.success) {
+      const role = authStore.user?.role
+      if (role === 'admin') router.push('/dashboard')
+      else if (role === 'employee') router.push('/employee/dashboard')
+      else if (role === 'receptionist') router.push('/receptionist/dashboard')
+      else router.push('/unauthorized')
     } else {
-      errorMessage.value = "Invalid OTP. Please try again.";
+      errorMessage.value = 'Invalid OTP. Please try again.'
     }
-  } catch (error) {
-    console.error("OTP Verification Error:", error);
-    errorMessage.value = "An error occurred. Please try again.";
+  } catch (error: any) {
+    errorMessage.value = error.message || 'An error occurred. Please try again.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 

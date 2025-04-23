@@ -1,130 +1,118 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-100">
-    <!-- Navbar -->
-    <div class="h-16 bg-purple-900 text-white shadow-md flex items-center px-6 justify-between">
-      <h1 class="text-lg font-semibold">Admin Dashboard</h1>
-      <button
-        @click="logout"
-        class="px-4 py-2 border-2 rounded border-black text-purple-900 bg-amber-500 hover:bg-purple-700 hover:text-white transition-all duration-300"
-      >
-        Logout
-      </button>
-    </div>
-
-    <div class="flex flex-grow">
-      <!-- Sidebar -->
-      <div
-        :class="[
-          'bg-white border-r-2 border-purple-900 shadow-lg flex flex-col transition-all duration-300',
-          sidebarCollapsed ? 'w-20' : 'w-56',
-        ]"
-      >
-        <button @click="toggleSidebar" class="p-4 focus:outline-none">
-          <i
-            :class="[
-              'bx',
-              sidebarCollapsed ? 'bx-menu' : 'bx-x',
-              'text-black text-2xl transition-transform duration-300',
-            ]"
-          ></i>
+    <div class="min-h-screen flex flex-col bg-gray-100">
+      <!-- Navbar -->
+      <div class="h-16 bg-purple-900 text-white shadow-md flex items-center px-6 justify-between">
+        <h1 class="text-lg font-semibold">  Receptionist Dashboard</h1>
+        <button
+          @click="logout"
+          class="px-4 py-2 border-2 rounded border-black text-purple-900 bg-amber-500 hover:bg-purple-700 hover:text-white transition-all duration-300"
+        >
+          Logout
         </button>
-        <ul class="flex flex-col py-4">
-          <li
-            v-for="(item, index) in menuItems"
-            :key="index"
-            class="transition-transform duration-300 hover:translate-x-2"
-          >
-            <a
-              href="#"
-              @click.prevent="setActivePage(item.label)"
-              class="flex items-center h-12 text-black hover:text-gray-700"
-            >
-              <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-black">
-                <i :class="['bx', item.icon, 'text-xl']"></i>
-              </span>
-              <span
-                v-if="!sidebarCollapsed"
-                class="text-sm font-medium transition-all duration-300"
-              >{{ item.label }}</span>
-            </a>
-          </li>
-        </ul>
       </div>
-
-      <!-- Main Content -->
-      <div class="flex-grow py-6 md:py-10 px-6 md:px-10">
-        <!-- Home Section -->
-        <div v-if="activePage === 'Home'">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-center items-center">
-            <div
-              v-for="(widget, index) in widgets"
+  
+      <div class="flex flex-grow">
+        <!-- Sidebar -->
+        <div
+          :class="[
+            'bg-white border-r-2 border-purple-900 shadow-lg flex flex-col transition-all duration-300',
+            sidebarCollapsed ? 'w-20' : 'w-56',
+          ]"
+        >
+          <button @click="toggleSidebar" class="p-4 focus:outline-none">
+            <i
+              :class="[
+                'bx',
+                sidebarCollapsed ? 'bx-menu' : 'bx-x',
+                'text-black text-2xl transition-transform duration-300',
+              ]"
+            ></i>
+          </button>
+          <ul class="flex flex-col py-4">
+            <li
+              v-for="(item, index) in menuItems"
               :key="index"
-              class="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center w-64 h-40 transform transition-transform duration-500 hover:scale-105 border-2 border-purple-900 backdrop-blur-xl bg-opacity-90"
+              class="transition-transform duration-300 hover:translate-x-2"
             >
-              <i :class="['bx', widget.icon, 'text-6xl text-purple-900']"></i>
-              <h2 class="text-lg font-semibold mt-2">{{ widget.title }}</h2>
-              <p class="text-gray-500">{{ widget.text }}</p>
+              <a
+                href="#"
+                @click.prevent="setActivePage(item.label)"
+                class="flex items-center h-12 text-black hover:text-gray-700"
+              >
+                <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-black">
+                  <i :class="['bx', item.icon, 'text-xl']"></i>
+                </span>
+                <span
+                  v-if="!sidebarCollapsed"
+                  class="text-sm font-medium transition-all duration-300"
+                  >{{ item.label }}</span
+                >
+              </a>
+            </li>
+          </ul>
+        </div>
+  
+        <!-- Main Content -->
+        <div class="flex-grow py-6 md:py-10 px-6 md:px-10">
+          <!-- Home Section -->
+          <div v-if="activePage === 'Home'">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-center items-center">
+              <div
+                v-for="(widget, index) in widgets"
+                :key="index"
+                class="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center w-64 h-40 transform transition-transform duration-500 hover:scale-105 border-2 border-purple-900 backdrop-blur-xl bg-opacity-90"
+              >
+                <i :class="['bx', widget.icon, 'text-6xl text-purple-900']"></i>
+                <h2 class="text-lg font-semibold mt-2">{{ widget.title }}</h2>
+                <p class="text-gray-500">{{ widget.text }}</p>
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Employees Section -->
-        <div v-if="activePage === 'Employees'">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-purple-900">Employees</h3>
-            <button
-              @click="toggleEmployeeForm"
-              class="px-4 py-2 bg-gray text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
-            >
-              Create New
-            </button>
+  
+          <!-- Employees Section 
+          <div v-if="activePage === 'Profile'">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-purple-900">Your Profile</h3>
+              <button
+                @click="toggleEmployeeForm"
+                class="px-4 py-2 bg-grey text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
+              >
+                Update profile
+              </button>
+            </div>
+  
           </div>
-          <div v-if="!showEmployeeForm && !showEditEmployeeForm">
-            <EmployeeDirectory
-              :employees="employees"
-              :items-per-page="itemsPerPage"
-              @delete-employee="deleteEmployee"
-              @edit-employee="startEditingEmployee"
-            />
+          -->
+  
+          <!-- Employee Travels Section -->
+          <div v-if="activePage === 'Travels'">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-purple-900"> Travels</h3>
+              <button
+                @click="toggleTravelForm"
+                class="px-4 py-2 bg-grey text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
+              >
+                Create New
+              </button>
+            </div>
+  
+            <!-- Travel Listing -->
+            <div v-if="!showTravelForm">
+              <EmployeeTravelList
+                :travels="travels"
+                :items-per-page="itemsPerPage"
+                @delete-travel="deleteTravel"
+                @edit-travel="editTravel"
+              />
+            </div>
+  
+            <!-- Create Travel Form -->
+            <div v-if="showTravelForm" class="bg-white p-6 rounded-lg shadow-md">
+              <CreateTravelForm @cancel="toggleTravelForm" @travel-added="addTravel" />
+            </div>
           </div>
-          <div v-if="showEmployeeForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateEmployeeForm @cancel="toggleEmployeeForm" @employee-added="addEmployee" />
-          </div>
-          <div v-if="showEditEmployeeForm" class="bg-white p-6 rounded-lg shadow-md">
-            <EditEmployee
-              :employee="selectedEmployee"
-              @cancel="closeEditForm"
-              @update-employee="handleUpdate"
-            />
-          </div>
-        </div>
-
-        <!-- Employee Travels Section -->
-        <div v-if="activePage === 'Employee Travels'">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-purple-900">Employee Travels</h3>
-            <button
-              @click="toggleTravelForm"
-              class="px-4 py-2 bg-gray text-white border-2 border-purple-900 rounded-lg shadow hover:bg-gray-700 transition-all"
-            >
-              Create New
-            </button>
-          </div>
-          <div v-if="!showTravelForm">
-            <EmployeeTravelList
-              :travels="travels"
-              :items-per-page="itemsPerPage"
-              @delete-travel="deleteTravel"
-              @edit-travel="editTravel"
-            />
-          </div>
-          <div v-if="showTravelForm" class="bg-white p-6 rounded-lg shadow-md">
-            <CreateTravelForm @cancel="toggleTravelForm" @travel-added="addTravel" />
-          </div>
-        </div>
-
-        <!-- Employee Visits Section -->
-        <div v-if="activePage === 'Visits'">
+ <!-- Employee Visits Section -->
+ <div v-if="activePage === 'Visits'">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-purple-900">Employee Visits</h3>
             
@@ -216,7 +204,7 @@ const BASE_URL = 'http://127.0.0.1:8000';
 
 definePageMeta({
   middleware: ['roles'],
-  roles: ['admin']
+  roles: ['receptionist']
 });
 
 // Reactive state
